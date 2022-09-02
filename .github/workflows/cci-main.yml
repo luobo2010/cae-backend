@@ -41,39 +41,3 @@ jobs:
           docker build -t $SWR_REGISTRY/$SWR_ORGANIZATION/$IMAGE_NAME:$IMAGE_TAG .
           docker push $SWR_REGISTRY/$SWR_ORGANIZATION/$IMAGE_NAME:$IMAGE_TAG
           echo "::set-output name=image::$SWR_REGISTRY/$SWR_ORGANIZATION/$IMAGE_NAME:$IMAGE_TAG"
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Authenticate to Huawei Cloud
-        uses: huaweicloud/auth-action@v1.1.0
-        with: 
-            access_key_id: ${{ secrets.ACCESSKEY }} 
-            secret_access_key: ${{ secrets.SECRETACCESSKEY }}
-            region: ${{ env.REGION_ID }}
-            project_id: ${{env.PROJECT_ID}}
-
-      - name: Kubectl Tool Installer
-        id: install-kubectl
-        uses: Azure/setup-kubectl@v2.1
-
-      # 通过镜像新建或者更新负载
-      - name: Deploy to CCI
-        uses: huaweicloud/deploy-cci-action@v1.2.0
-        id: deploy-to-cci
-        with:
-          namespace: action-namespace-name
-          deployment: action-deployment-name
-          image: ${{ needs.build.outputs.image }}
-
-
-      # 通过yaml新建或者更新负载,yaml文件可以根据自己的需求修改pod数量，容器的端口，cpu, 内存
-      # - name: Deploy to CCI
-      #   uses: huaweicloud/deploy-cci-action@v1.2.0
-      #   id: deploy-to-cci
-      #   with:
-      #     namespace: action-namespace-name
-      #     deployment: action-deployment-name
-      #     manifest: './deployment.yaml' 
-      #     image: ${{ needs.build.outputs.image }}
